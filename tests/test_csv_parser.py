@@ -4,8 +4,8 @@ import sys
 
 from pathlib import Path
 
-from src.parser.csv_parser import StandardCSVParser
-from src.parser.util import get_max_len
+from parser.csv_parser import StandardCSVParser
+from parser.util import get_max_len
 
 class TestCSVParser(unittest.TestCase):
     @classmethod

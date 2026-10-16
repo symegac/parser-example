@@ -1,8 +1,8 @@
 import unittest
 import sys
 
-from src.parser.csv_parser import ParserConfig
-from src.parser.types import delim, EOL
+from parser.csv_parser import ParserConfig
+from parser.types import delim, EOL
 
 class TestParserConfig(unittest.TestCase):
     @classmethod

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from src.parser.types import delim, DelimiterError, EOL
+from parser.types import delim, DelimiterError, EOL
 
 class TestTypes(unittest.TestCase):
     @classmethod

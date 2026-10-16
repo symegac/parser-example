@@ -4,7 +4,7 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from src.parser.util import get_max_len, read_file, truncate
+from parser.util import get_max_len, read_file, truncate
 
 class TestUtil(unittest.TestCase):
     @classmethod

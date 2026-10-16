@@ -1,6 +1,6 @@
 import unittest
 
-from src.parser.types import is_int, is_float, is_bool, is_none, parse_simple_type
+from parser.types import is_int, is_float, is_bool, is_none, parse_simple_type
 
 class TestColtypes(unittest.TestCase):
     @classmethod

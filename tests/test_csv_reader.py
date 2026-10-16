@@ -3,9 +3,9 @@ import unittest
 
 from pathlib import Path
 
-from src.parser.csv_parser import CSVReader, StandardCSVParser, ParserConfig
-from src.parser.types import CSVSyntaxError, delim, EOL
-from src.parser.util import read_file
+from parser.csv_parser import CSVReader, StandardCSVParser, ParserConfig
+from parser.types import CSVSyntaxError, delim, EOL
+from parser.util import read_file
 
 class TestCSVReader(unittest.TestCase):
     @classmethod
