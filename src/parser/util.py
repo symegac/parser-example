@@ -1,4 +1,9 @@
+import re
+
 from pathlib import Path
+
+SINGLE_QUOTE_STRING_PATTERN = re.compile(r"'(.+?)'", re.IGNORECASE) # non-greedy
+DOUBLE_QUOTE_REPL = r'"\1"'
 
 # https://en.wikipedia.org/wiki/Whitespace_character#Unicode
 WHITESPACE = (

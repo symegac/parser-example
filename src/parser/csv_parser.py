@@ -2,10 +2,10 @@ import re
 
 from dataclasses import dataclass, field, InitVar
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
-from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, parse_simple_type, Rows
-from src.parser.util import read_file, WHITESPACE
+from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, parse_simple_type, Rows, SimpleType
+from src.parser.util import DOUBLE_QUOTE_REPL, read_file, SINGLE_QUOTE_STRING_PATTERN, WHITESPACE
 
 @dataclass(frozen=True)
 class ParserConfig:
@@ -257,3 +257,29 @@ class CSVReader:
     @property
     def raw_data(self) -> str:
         return self._raw
+
+    def to_dict(self) -> dict[str, dict[str, Any]]:
+        """Returns read data as a dictionary"""
+        output: dict[str, dict[str, Any]] = {}
+
+        for i, row in enumerate(self.rows):
+            row_iterable = zip(self.header, row) if self.header is not None else enumerate(row)
+            row_as_dict = {
+                str(k): (str(v) if not isinstance(v, SimpleType.__value__) else v)
+                for k, v in row_iterable
+            }
+
+            output.setdefault(str(i), row_as_dict)
+
+        return output
+
+    def to_json(self) -> str:
+        """Returns read data as a JSON-formatted string"""
+        table_string = str(self.to_dict()).replace('"', '\\"')
+        table_string = re.sub(
+            pattern=SINGLE_QUOTE_STRING_PATTERN,
+            repl=DOUBLE_QUOTE_REPL,
+            string=table_string
+        )
+
+        return table_string
