@@ -1,0 +1,24 @@
+{
+    "valid_files": [   
+        {
+            "path": "test_data_employees.csv",
+            "header": ["name", "email", "department", "role", "salary", "start_date", "office"],
+            "rows": 1,
+            "first_row": ["Marcus Chen", "marcus.chen@example.com", "Engineering", "Senior Software Engineer", 155000, "2019-03-15", "San Francisco"]
+        },
+        {
+            "path": "test_data_sogne.csv",
+            "header": ["dagi_id", "kode", "navn", "ændret", "geo_ændret", "geo_version", "bbox_xmin", "bbox_ymin", "bbox_xmax", "bbox_ymax", "visueltcenter_x", "visueltcenter_y"],
+            "rows": 2,
+            "first_row": [107307, 7002, "Helligånds", "2023-11-02T22:05:36.260Z", "2023-11-02T22:05:36.260Z", 6, 12.56342763, 55.66719221, 12.58534207, 55.68333631, 12.57165114, 55.67358892]
+        }
+    ],
+    "invalid_files": [
+        {
+            "path": "test_data_a.csv",
+            "header": ["name", "email", "department", "role", "salary", "start_date", "office"],
+            "rows": 1,
+            "first_row": ["Marcus Chen", "marcus.chen@example.com", "Engineering", "Senior Software Engineer", 155000, "2019-03-15", "San Franciscoa"]
+        }
+    ]
+}
