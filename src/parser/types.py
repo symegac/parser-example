@@ -10,6 +10,9 @@ type Rows = list[Line]
 class CSVError(Exception):
     ...
 
+class CSVSyntaxError(SyntaxError, CSVError):
+    ...
+
 class DelimiterError(ValueError, CSVError):
     ...
 

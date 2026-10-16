@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, InitVar
 from pathlib import Path
 from typing import Protocol
 
-from src.parser.types import delim, DelimiterError, EOL, Line, Rows
+from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, Rows
 from src.parser.util import read_file, WHITESPACE
 
 @dataclass(frozen=True)
@@ -156,7 +156,9 @@ class CSVReader:
         contains_header: bool = True,
         *,
         auto: bool = True,
-        encoding: str = "utf-8"
+        encoding: str = "utf-8",
+        retain_empty_lines: bool = False,
+        skip_invalid_lines: bool = False,
     ) -> None:
         """
         Reads a CSV file and parses it
@@ -171,11 +173,17 @@ class CSVReader:
         :type auto: bool
         :param encoding: The encoding of the CSV file, defaults to `"utf-8"`
         :type encoding: str
+        :param retain_empty_lines: Whether empty lines are retained, defaults to `False`
+        :type retain_empty_lines: bool
+        :param skip_invalid_lines: Whether invalid lines are skipped or throw an exception, defaults to `False`
+        :type skip_invalid_lines: bool
         """
         self.path = path
         self.parser = parser
         self.contains_header = contains_header
         self.encoding = encoding
+        self.retain_empty_lines = retain_empty_lines
+        self.skip_invalid_lines = skip_invalid_lines
 
         self.clear()
 
@@ -188,15 +196,32 @@ class CSVReader:
 
     def parse(self) -> None:
         lines = self.parser.split_lines(self._raw)
+        fields = 0
 
         if self.contains_header:
             header, *lines = lines
             self._header = self.parser.parse_line(header)
+            fields = len(self._header)
 
         self._rows = []
 
-        for line in lines:
+        for i, line in enumerate(lines, start=int(self.contains_header)):
             row = self.parser.parse_line(line)
+
+            if not line:
+                if self.retain_empty_lines:
+                    self._rows.append(row)
+                continue
+
+            if not fields:
+                fields = len(row)
+            if len(row) != fields:
+                error = CSVSyntaxError(f"Row length different from established amount of fields: {len(row)} != {fields}")
+
+                if self.skip_invalid_lines:
+                    print(error.args[0], f"Skipping invalid line {i}", sep='\n')
+                else:
+                    raise error
 
             self._rows.append(row)
 
