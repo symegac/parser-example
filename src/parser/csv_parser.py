@@ -1,9 +1,11 @@
 import re
 
 from dataclasses import dataclass, field, InitVar
+from pathlib import Path
 from typing import Protocol
 
-from src.parser.types import delim, DelimiterError, EOL, Line
+from src.parser.types import delim, DelimiterError, EOL, Line, Rows
+from src.parser.util import read_file, WHITESPACE
 
 @dataclass(frozen=True)
 class ParserConfig:
@@ -88,17 +90,6 @@ class CSVParser(Protocol):
         """
         ...
 
-# https://en.wikipedia.org/wiki/Whitespace_character#Unicode
-WHITESPACE = (
-    '\t', '\n', '\v', '\f', '\r', ' ',
-    '\u0085', '\u00a0', '\u1680',
-    '\u2000', '\u2001', '\u2002', '\u2003', '\u2004',
-    '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
-    '\u200a',
-    '\u2028', '\u2029', '\u202f',
-    '\u205f', '\u3000',
-)
-
 class StandardCSVParser(CSVParser):
     def split_lines(self, string: str) -> list[str]:
         return self._split_lines(string, newline=self.newline, retain_whitespace=self.retain_whitespace)
@@ -154,3 +145,83 @@ class StandardCSVParser(CSVParser):
             fields.append(char_buffer if retain_whitespace else char_buffer.strip())
 
         return fields
+
+class CSVReader:
+    """Reads a CSV file and parses it"""
+    def __init__(
+        self,
+        path: Path | str,
+        /,
+        parser: CSVParser = StandardCSVParser(),
+        contains_header: bool = True,
+        *,
+        auto: bool = True,
+        encoding: str = "utf-8"
+    ) -> None:
+        """
+        Reads a CSV file and parses it
+
+        :param path: The path of the CSV file
+        :type path: Path | str
+        :param parser: The parser used to parse a CSV string, defaults to `StandardCSVParser()`
+        :type parser: CSVParser
+        :param contains_header: Whether the CSV string includes a header, defaults to `True`
+        :type contains_header: bool
+        :param auto: Automatically read and parse file on initialization, defaults to `True`
+        :type auto: bool
+        :param encoding: The encoding of the CSV file, defaults to `"utf-8"`
+        :type encoding: str
+        """
+        self.path = path
+        self.parser = parser
+        self.contains_header = contains_header
+        self.encoding = encoding
+
+        self.clear()
+
+        if auto:
+            self.read()
+            self.parse()
+
+    def read(self) -> None:
+        self._raw = read_file(path=self.path, encoding=self.encoding)
+
+    def parse(self) -> None:
+        lines = self.parser.split_lines(self._raw)
+
+        if self.contains_header:
+            header, *lines = lines
+            self._header = self.parser.parse_line(header)
+
+        self._rows = []
+
+        for line in lines:
+            row = self.parser.parse_line(line)
+
+            self._rows.append(row)
+
+    def clear(self) -> None:
+        """Clears read data"""
+        self._raw = ''
+        self._header = None
+        self._rows = []
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @path.setter
+    def path(self, path: Path | str) -> None:
+        self._path = Path(path)
+
+    @property
+    def header(self) -> Line | None:
+        return self._header
+
+    @property
+    def rows(self) -> Rows:
+        return self._rows
+
+    @property
+    def raw_data(self) -> str:
+        return self._raw
