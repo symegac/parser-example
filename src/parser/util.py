@@ -1,6 +1,8 @@
 import re
 
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 SINGLE_QUOTE_STRING_PATTERN = re.compile(r"'(.+?)'", re.IGNORECASE) # non-greedy
 DOUBLE_QUOTE_REPL = r'"\1"'
@@ -39,3 +41,50 @@ def read_file(path: Path, encoding: str = "utf-8") -> str:
         raise FileNotFoundError(path)
     except OSError:
         raise
+
+def get_max_len(items: Iterable[Any]) -> int:
+    """
+    Gets the maximum length of the stringified forms of items in a given collection
+
+    :param items: The collection of items
+    :type items: Iterable[Any]
+    :return int: The maximum string length among input items
+    """
+    if not items:
+        return 0
+
+    lengths = (len(str(item)) for item in items)
+
+    return max(lengths)
+
+def truncate(obj: Any, max_len: int = 10) -> str:
+    """
+    Truncates string representation of an object to a set maximum length, inserting an ellipsis as indication.
+    Correctly rounds decimal numbers (only of type `float`, not `Decimal`) as well.
+    
+    :param obj: The object to truncate
+    :type obj: Any
+    :param max_len: The maximum allowed string length, defaults to `10`
+    :type max_len: int
+    """
+    if max_len <= 3:
+        return "..."
+
+    original_data_length = len(str(obj))
+    max_data_length = max_len - 3
+
+    if isinstance(obj, float):
+        integer_length = len(str(obj).split('.')[0])
+        if max_len <= 3 + integer_length:
+            obj = f"{round(obj)}"
+        else:
+            obj = f"{obj:.{min(max_data_length - integer_length - 1, original_data_length - integer_length - 1)}f}"
+
+    obj = str(obj)
+
+    truncated_data_length = len(obj)
+
+    if truncated_data_length <= max_len and not (truncated_data_length < original_data_length):
+        return obj
+
+    return obj[:max_data_length] + "..."

@@ -1,6 +1,67 @@
 from typing import Any
 
 from src.parser.types import Header, Rows, TypeCaster
+from src.parser.util import get_max_len, truncate
+
+def pretty_header(header: Header, colwidth: int, *, continues: bool = False) -> str:
+    """
+    Pretty formats a table header for printing
+
+    :param header: The header to print
+    :type header: Header
+    :param colwidth: The printed width of each column
+    :type colwidth: int
+    :param continues: Whether the header is followed by rows, defaults to `False`
+    :type continues: bool
+    """
+    top = '-' * ((colwidth + 3) * len(header) - 1)
+    colnames = '|'.join(f" {truncate(col, colwidth):<{colwidth}} " for col in header)
+    bottom = '|'.join('-' * (colwidth + 2) for _ in header) if continues else top
+
+    output = '\n'.join((top, colnames, bottom))
+
+    return output
+
+def pretty_rows(rows: Rows, colwidth: int) -> str:
+    """
+    Pretty formats table rows for printing
+
+    :param rows: The rows to print
+    :type rows: Rows
+    :param colwidth: The printed width of each column
+    :type colwidth: int
+    """
+    row_strings = []
+
+    for row in rows:
+        fields = []
+        for field in row:
+            align = '>' if isinstance(field, int | float) else '<'
+            fields.append(f" {truncate(field, colwidth):{align}{colwidth}} ")
+        row_strings.append('|'.join(fields))
+
+    output = '\n'.join(row_strings)
+
+    return output
+
+def pretty_table(header: Header | None, rows: Rows, colwidth: int = 10) -> str:
+    """
+    Pretty formats a table for printing
+    
+    :param header: The header to print
+    :type header: Header | None
+    :param rows: The rows to print
+    :type rows: Rows
+    :param colwidth: The printed width of each column, defaults to `10`
+    :type colwidth: int
+    """
+    parts = []
+
+    if header is not None:
+        parts.append(pretty_header(header, colwidth, continues=True))
+    parts.append(pretty_rows(rows, colwidth))
+
+    return '\n'.join(parts)
 
 class Table:
     """Table for viewing and selecting data, with optional type conversion"""
@@ -29,17 +90,13 @@ class Table:
         """Column view of table data"""
         return list(zip(*self.rows))
 
+    @property
+    def colwidth(self) -> int:
+        """Gets column width from header"""
+        return get_max_len(self.header) if self.header is not None else 10
+
     def __str__(self) -> str:
-        output = ''
-
-        if self.header is not None:
-            header = "\t|\t".join(self.header)
-            output += header + '\n'
-
-        rows = '\n'.join("\t|\t".join(row) for row in self.rows)
-        output += rows
-
-        return output
+        return pretty_table(self.header, self.rows, self.colwidth)
 
     def load_rows(
         self,
