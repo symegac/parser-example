@@ -1,5 +1,6 @@
 import os
 
+from collections.abc import Callable
 from enum import StrEnum
 from typing import Any, Self
 
@@ -7,6 +8,7 @@ type Line = list[str]
 type Header = Line
 type Rows = list[Line]
 
+type TypeCaster = type | Callable[..., Any]
 type SimpleType = int | float | bool | None
 
 def is_int(s: str) -> bool:
