@@ -195,6 +195,26 @@ class CSVReader:
             self.read()
             self.parse()
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @path.setter
+    def path(self, path: Path | str) -> None:
+        self._path = Path(path)
+
+    @property
+    def header(self) -> Line | None:
+        return self._header
+
+    @property
+    def rows(self) -> Rows:
+        return self._rows
+
+    @property
+    def raw_data(self) -> str:
+        return self._raw
+
     def read(self) -> None:
         self._raw = read_file(path=self.path, encoding=self.encoding)
 
@@ -232,31 +252,39 @@ class CSVReader:
 
             self._rows.append(row)
 
+    def reload(
+        self,
+        *,
+        full: bool = True,
+        new_path: Path | str | None = None
+    ) -> None:
+        """
+        Reparses (and optionally rereads) CSV file to use new parser configuration (and reflect file changes)
+
+        :param full: Fully reread file to get file changes, defaults to `True`
+        :type full: bool
+        :param new_path: Optional new path to read file from, defaults to `None`
+        :type new_path: Path | str | None
+        """
+        if new_path is not None:
+            old_path = self.path
+            self.path = new_path
+
+            try:
+                self.read()
+            except FileNotFoundError:
+                print("Could not change path: File not found")
+                self.path = old_path
+        elif full:
+            self.read()
+
+        self.parse()
+
     def clear(self) -> None:
         """Clears read data"""
         self._raw = ''
         self._header = None
         self._rows = []
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    @path.setter
-    def path(self, path: Path | str) -> None:
-        self._path = Path(path)
-
-    @property
-    def header(self) -> Line | None:
-        return self._header
-
-    @property
-    def rows(self) -> Rows:
-        return self._rows
-
-    @property
-    def raw_data(self) -> str:
-        return self._raw
 
     def to_dict(self) -> dict[str, dict[str, Any]]:
         """Returns read data as a dictionary"""
