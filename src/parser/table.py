@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Generator
+from typing import Any, Self
 
 from src.parser.types import Header, Rows, TypeCaster
 from src.parser.util import get_max_len, truncate
@@ -129,3 +130,107 @@ class Table:
             loaded_rows.append(loaded_row)
 
         return loaded_rows
+
+    def select(self, start: int | None = None, stop: int | None = None) -> Generator[Any]:
+        """
+        Returns the specified range of rows as an iterator
+
+        :param start: Index of first row in range, defaults to None (first row of table)
+        :type start: int | None
+        :param stop: Index of last row in range, defaults to None (last row of table)
+        :type stop: int | None
+        """
+        if start is None:
+            start = 0
+        if stop is None:
+            stop = len(self.rows)
+
+        for i in range(start, stop):
+            yield self.rows[i]
+
+    def range(self, start: int | None = None, stop: int | None = None) -> Self:
+        """
+        Returns the specified range of rows as a new table with same header
+
+        :param start: Index of first row in range, defaults to None (first row of table)
+        :type start: int | None
+        :param stop: Index of last row in range, defaults to None (last row of table)
+        :type stop: int | None
+        """
+        return self.__class__(
+            header=self.header,
+            rows=list(self.select(start, stop)),
+            **self.types
+        )
+
+    def head(self, rows: int = 10) -> Self:
+        """
+        Returns the first N rows as a new table with same header
+
+        :param rows: The first N rows
+        :type rows: int
+        """
+        return self.range(stop=rows)
+
+    def tail(self, rows: int = 10) -> Self:
+        """
+        Returns the last N rows as a new table with same header
+
+        :param rows: The last N rows
+        :type rows: int
+        """
+        return self.range(start=-rows)
+
+    def sort(self, index: str | int = 0, reverse: bool = False) -> Self:
+        """
+        Returns new table with same header sorted by specified column
+
+        :param index: The column to be sorted by, defaults to `0` (first column)
+        :type index: str | int
+        :param reverse: Whether the sorting is descending, defaults to False
+        :type reverse: bool
+        """
+        sorted_rows = self.itersort(index=index, reverse=reverse)
+
+        return self.__class__(
+            header=self.header,
+            rows=sorted_rows,
+            **self.types
+        )
+
+    def iterhead(self, rows: int = 10) -> Generator[Any]:
+        """
+        Returns the first N rows of the table as an iterator
+
+        :param rows: The first N rows
+        :type rows: int
+        """
+        return self.select(stop=rows)
+
+    def itertail(self, rows: int = 10) -> Generator[Any]:
+        """
+        Returns the last N rows of the table as an iterator
+
+        :param rows: The last N rows
+        :type rows: int
+        """
+        return self.select(start=-rows)
+
+    def itersort(self, index: str | int = 0, reverse: bool = False) -> Rows:
+        """
+        Returns rows sorted by specified column
+
+        :param index: The column to be sorted by, defaults to `0` (first column)
+        :type index: str | int
+        :param reverse: Whether the sorting is descending, defaults to False
+        :type reverse: bool
+        """
+        if isinstance(index, str):
+            if self.header is None:
+                raise IndexError("Cannot use string as index. Table has no column names.")
+            else:
+                index = self.header.index(index)
+
+        sorter = lambda x: x[index]
+
+        return sorted(self.rows, key=sorter, reverse=reverse)
