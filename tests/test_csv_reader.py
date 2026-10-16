@@ -107,3 +107,30 @@ class TestCSVReader(unittest.TestCase):
             rows=test_file["rows"] + 1,
             first_row=test_file["first_row"]
         )
+
+    def test_reader_to_dict(self) -> None:
+        for test_file in self.valid_files:
+            if not test_file["header"]:
+                continue
+
+            path = self.DATA_PATH / test_file["path"]
+            reader = CSVReader(path, parser=self.parser)
+
+            export = reader.to_dict()
+
+            self.assertEqual(len(export), test_file["rows"])
+            self.assertEqual(list(export['0'].keys()), test_file["header"])
+            self.assertEqual(list(export['0'].values()), test_file["first_row"])
+
+    def test_reader_to_json(self) -> None:
+        for test_file in self.valid_files:
+            if not test_file["header"]:
+                continue
+
+            path = self.DATA_PATH / test_file["path"]
+            reader = CSVReader(path, parser=self.parser)
+
+            export = reader.to_dict()
+            json_export = reader.to_json()
+
+            self.assertEqual(export, json.loads(json_export))
