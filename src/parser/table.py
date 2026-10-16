@@ -102,6 +102,12 @@ class Table:
     def __str__(self) -> str:
         return pretty_table(self, self.colwidth)
 
+    def __format__(self, format_spec: str) -> str:
+        if not format_spec.isdecimal():
+            raise ValueError(f"Only integers can be used to format column width of tables of type {self.__class__.__name__!r}")
+
+        return pretty_table(self, int(format_spec))
+
     def load_rows(
         self,
         header: Header | None = None,
