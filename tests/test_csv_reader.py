@@ -74,3 +74,36 @@ class TestCSVReader(unittest.TestCase):
                 rows=test_file["rows"] + 1,
                 first_row=test_file["header"]
             )
+
+    def test_reader_throws_incongruent_field_length(self) -> None:
+        test_file = self.valid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+        config = ParserConfig(delimiter='a', newline=EOL.POSIX)
+        parser = StandardCSVParser(config=config)
+
+        with self.assertRaises(CSVSyntaxError):
+            CSVReader(path, parser=parser)
+
+    def test_reader_skip_invalid_lines(self) -> None:
+        test_file = self.valid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+        config = ParserConfig(delimiter='a', newline=EOL.POSIX)
+        parser = StandardCSVParser(config=config)
+
+        try:
+            CSVReader(path, parser=parser, skip_invalid_lines=True)
+        except CSVSyntaxError:
+            self.fail("Reader didn't skip line with invalid syntax")
+
+    def test_reader_retain_empty_lines(self) -> None:
+        test_file = self.invalid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+
+        reader = CSVReader(path, parser=self.parser, retain_empty_lines=True)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=path,
+            header=test_file["header"],
+            rows=test_file["rows"] + 1,
+            first_row=test_file["first_row"]
+        )
