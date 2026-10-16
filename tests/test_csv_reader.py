@@ -134,3 +134,102 @@ class TestCSVReader(unittest.TestCase):
             json_export = reader.to_json()
 
             self.assertEqual(export, json.loads(json_export))
+
+    def test_reader_reload_changed_parser_config(self) -> None:
+        test_file = self.invalid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+        parser = StandardCSVParser(config=self.parser_config)
+
+        # standard config
+        reader = CSVReader(path, parser=parser)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=path,
+            header=test_file["header"] or None,
+            rows=test_file["rows"],
+            first_row=test_file["first_row"]
+        )
+
+        # changed config
+        reader.parser.delimiter = delim('a')
+        reader.reload(full=False)
+
+        self.assertEqual(reader.header, ['n', 'me,em', 'il,dep', 'rtment,role,s', 'l', 'ry,st', 'rt_d', 'te,office'])
+        self.assertEqual(reader.rows[0], ['M', 'rcus Chen,m', 'rcus.chen@ex', 'mple.com,Engineering,Senior Softw', 're Engineer,155000,2019-03-15,S', 'n Fr', 'ncisco', ''])
+
+    def test_reader_reload_changed_file_contents(self) -> None:
+        test_file = self.valid_files[0]
+        path = self.DATA_PATH / test_file["path"].replace("employees.csv", "rw.csv")
+        parser = StandardCSVParser(config=self.parser_config)
+
+        reader = CSVReader(path, parser=parser)
+
+        appended = 'a'
+        original_contents = read_file(path)
+        new_contents = original_contents + appended
+
+        with open(path, 'w', encoding="utf-8") as file:
+            file.write(new_contents)
+
+        reader.reload(full=True)
+
+        original_field = test_file["first_row"][-1]
+        new_field = reader.rows[0][-1]
+        self.assertNotEqual(new_field, original_field)
+        self.assertEqual(new_field, original_field + appended)
+
+        # remember to return file to original state
+        with open(path, 'w', encoding="utf-8") as file:
+            file.write(original_contents)
+
+    def test_reader_reload_new_path(self) -> None:
+        test_file = self.valid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+        parser = StandardCSVParser(config=self.parser_config)
+
+        reader = CSVReader(path, parser=parser)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=path,
+            header=test_file["header"] or None,
+            rows=test_file["rows"],
+            first_row=test_file["first_row"]
+        )
+
+        test_file = self.valid_files[1]
+        new_path = self.DATA_PATH / test_file["path"]
+        reader.reload(new_path=new_path)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=new_path,
+            header=test_file["header"] or None,
+            rows=test_file["rows"],
+            first_row=test_file["first_row"]
+        )
+
+    def test_reader_reload_new_invalid_path(self) -> None:
+        test_file = self.valid_files[0]
+        path = self.DATA_PATH / test_file["path"]
+        parser = StandardCSVParser(config=self.parser_config)
+
+        reader = CSVReader(path, parser=parser)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=path,
+            header=test_file["header"] or None,
+            rows=test_file["rows"],
+            first_row=test_file["first_row"]
+        )
+
+        new_path = self.DATA_PATH / "invalid" / "path"
+        reader.reload(new_path=new_path)
+
+        # new invalid path has no effect
+        self.assertEqual(reader.path, path)
+        self.assertCorrectlyReadsCSV(
+            reader=reader,
+            path=path,
+            header=test_file["header"] or None,
+            rows=test_file["rows"],
+            first_row=test_file["first_row"]
+        )
