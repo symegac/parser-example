@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, InitVar
 from pathlib import Path
 from typing import Protocol
 
-from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, Rows
+from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, parse_simple_type, Rows
 from src.parser.util import read_file, WHITESPACE
 
 @dataclass(frozen=True)
@@ -157,6 +157,7 @@ class CSVReader:
         *,
         auto: bool = True,
         encoding: str = "utf-8",
+        predict_simple_types: bool = True,
         retain_empty_lines: bool = False,
         skip_invalid_lines: bool = False,
     ) -> None:
@@ -173,6 +174,8 @@ class CSVReader:
         :type auto: bool
         :param encoding: The encoding of the CSV file, defaults to `"utf-8"`
         :type encoding: str
+        :param predict_simple_types: Whether simple data types (int, float, bool, and None) should be automatically predicted, defaults to True
+        :type predict_simple_types: bool
         :param retain_empty_lines: Whether empty lines are retained, defaults to `False`
         :type retain_empty_lines: bool
         :param skip_invalid_lines: Whether invalid lines are skipped or throw an exception, defaults to `False`
@@ -182,6 +185,7 @@ class CSVReader:
         self.parser = parser
         self.contains_header = contains_header
         self.encoding = encoding
+        self.predict_simple_types = predict_simple_types
         self.retain_empty_lines = retain_empty_lines
         self.skip_invalid_lines = skip_invalid_lines
 
@@ -222,6 +226,9 @@ class CSVReader:
                     print(error.args[0], f"Skipping invalid line {i}", sep='\n')
                 else:
                     raise error
+
+            if self.predict_simple_types:
+                row = list(map(parse_simple_type, row))
 
             self._rows.append(row)
 

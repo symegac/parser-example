@@ -7,6 +7,37 @@ type Line = list[str]
 type Header = Line
 type Rows = list[Line]
 
+type SimpleType = int | float | bool | None
+
+def is_int(s: str) -> bool:
+    return s.isdigit() or s.removeprefix('-').isdigit()
+
+def is_float(s: str) -> bool:
+    if '.' not in s:
+        return False
+
+    s = s.replace('.', '', 1)
+
+    return is_int(s)
+
+def is_bool(s: str) -> bool:
+    return s.lower() in ("true", "false")
+
+def is_none(s: str) -> bool:
+    return s.lower() in ("none", "null", "n/a")
+
+def parse_simple_type(s: str) -> SimpleType | str:
+    if is_int(s):
+        return int(s)
+    if is_float(s):
+        return float(s)
+    if is_bool(s):
+        return True if s.lower() == "true" else False
+    if is_none(s):
+        return None
+
+    return s
+
 class CSVError(Exception):
     ...
 
