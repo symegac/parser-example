@@ -143,13 +143,23 @@ class Table:
         :param stop: Index of last row in range, defaults to None (last row of table)
         :type stop: int | None
         """
+        total = len(self.rows)
+
         if start is None:
             start = 0
+        elif start < 0:
+            start = total + start
+
         if stop is None:
-            stop = len(self.rows)
+            stop = total
+        elif stop < 0:
+            stop = total + stop
 
         for i in range(start, stop):
-            yield self.rows[i]
+            try:
+                yield self.rows[i]
+            except IndexError:
+                break
 
     def range(self, start: int | None = None, stop: int | None = None) -> Self:
         """
