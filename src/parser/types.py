@@ -3,6 +3,10 @@ import os
 from enum import StrEnum
 from typing import Any, Self
 
+type Line = list[str]
+type Header = Line
+type Rows = list[Line]
+
 class CSVError(Exception):
     ...
 

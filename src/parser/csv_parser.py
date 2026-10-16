@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, InitVar
+from typing import Protocol
 
-from src.parser.types import delim, DelimiterError, EOL
+from src.parser.types import delim, DelimiterError, EOL, Line
 
 @dataclass(frozen=True)
 class ParserConfig:
@@ -43,3 +44,44 @@ class ParserConfig:
                 raise DelimiterError(f"{err.args[0]} delimiter in strict mode: Only control characters LF, CR or a combination thereof can be used as newline character")
 
 STANDARD_PARSER_CONFIG = ParserConfig()
+
+# TODO: configurable quote character
+class CSVParser(Protocol):
+    """Parses CSV strings"""
+    delimiter: delim | str
+    newline: EOL | str
+    retain_whitespace: bool
+
+    def __init__(self, config: ParserConfig = STANDARD_PARSER_CONFIG) -> None:
+        """
+        :param config: Optional initial configuration of parser, defaults to `STANDARD_PARSER_CONFIG`
+        :type config: ParserConfig
+        """
+        self.configure(config)
+
+    def configure(self, config: ParserConfig | None = None) -> None:
+        config = config or STANDARD_PARSER_CONFIG
+
+        self.delimiter = config.delimiter
+        self.newline = config.newline
+        self.retain_whitespace = config.retain_whitespace
+
+    def split_lines(self, string: str) -> list[str]:
+        """
+        Splits a CSV-formatted string into lines
+
+        :param string: The string to be split
+        :type string: str
+        :return lines: list[str]
+        """
+        ...
+
+    def parse_line(self, string: str) -> Line:
+        """
+        Parses line items in a CSV-formatted string
+        
+        :param string: The string to be split
+        :type string: str
+        :return line: Line
+        """
+        ...
