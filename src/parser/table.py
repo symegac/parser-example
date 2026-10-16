@@ -4,6 +4,8 @@ from typing import Any, Self
 from src.parser.types import Header, Rows, TypeCaster
 from src.parser.util import get_max_len, truncate
 
+__all__ = ["Table"]
+
 def pretty_header(header: Header, colwidth: int, *, continues: bool = False) -> str:
     """
     Pretty formats a table header for printing
