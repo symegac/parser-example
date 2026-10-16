@@ -4,8 +4,8 @@ from dataclasses import dataclass, field, InitVar
 from pathlib import Path
 from typing import Any, Protocol
 
-from src.parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, parse_simple_type, Rows, SimpleType
-from src.parser.util import DOUBLE_QUOTE_REPL, read_file, SINGLE_QUOTE_STRING_PATTERN, WHITESPACE
+from parser.types import CSVSyntaxError, delim, DelimiterError, EOL, Line, parse_simple_type, Rows, SimpleType
+from parser.util import DOUBLE_QUOTE_REPL, read_file, SINGLE_QUOTE_STRING_PATTERN, WHITESPACE
 
 __all__ = ["CSVReader", "ParserConfig", "StandardCSVParser"]
 

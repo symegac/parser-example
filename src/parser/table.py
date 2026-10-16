@@ -1,8 +1,8 @@
 from collections.abc import Generator
 from typing import Any, Self
 
-from src.parser.types import Header, Rows, TypeCaster
-from src.parser.util import get_max_len, truncate
+from parser.types import Header, Rows, TypeCaster
+from parser.util import get_max_len, truncate
 
 __all__ = ["Table"]
 

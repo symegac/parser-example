@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "parser"
+version = "0.0.1"
+description = "CSV parser example"
+requires-python = ">= 3.13"
+readme = "README.md"
+
+[project.optional-dependencies]
+test = ["coverage >= 7.16.2"]
+all = ["parser[test]"]
+
+[tool.coverage.run]
+omit = ["table.py"]
+
+[tool.coverage.report]
+omit = ["*/tests/*"]
