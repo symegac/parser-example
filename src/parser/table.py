@@ -45,7 +45,7 @@ def pretty_rows(rows: Rows, colwidth: int) -> str:
 
     return output
 
-def pretty_table(header: Header | None, rows: Rows, colwidth: int = 10) -> str:
+def pretty_table(table: "Table", colwidth: int = 10) -> str:
     """
     Pretty formats a table for printing
     
@@ -57,6 +57,9 @@ def pretty_table(header: Header | None, rows: Rows, colwidth: int = 10) -> str:
     :type colwidth: int
     """
     parts = []
+
+    header = table.header
+    rows = table.rows
 
     if header is not None:
         parts.append(pretty_header(header, colwidth, continues=True))
@@ -97,7 +100,7 @@ class Table:
         return get_max_len(self.header) if self.header is not None else 10
 
     def __str__(self) -> str:
-        return pretty_table(self.header, self.rows, self.colwidth)
+        return pretty_table(self, self.colwidth)
 
     def load_rows(
         self,
