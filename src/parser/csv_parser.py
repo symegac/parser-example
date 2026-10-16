@@ -286,9 +286,14 @@ class CSVReader:
         self._header = None
         self._rows = []
 
-    def to_dict(self) -> dict[str, dict[str, Any]]:
+    def to_dict(self) -> dict[str, Any]:
         """Returns read data as a dictionary"""
-        output: dict[str, dict[str, Any]] = {}
+        output: dict[str, Any] = {}
+
+        if self.header is not None:
+            output.setdefault("header", self.header)
+
+        rows = []
 
         for i, row in enumerate(self.rows):
             row_iterable = zip(self.header, row) if self.header is not None else enumerate(row)
@@ -297,7 +302,9 @@ class CSVReader:
                 for k, v in row_iterable
             }
 
-            output.setdefault(str(i), row_as_dict)
+            rows.append(row_as_dict)
+
+        output.setdefault("rows", rows)
 
         return output
 

@@ -118,9 +118,10 @@ class TestCSVReader(unittest.TestCase):
 
             export = reader.to_dict()
 
-            self.assertEqual(len(export), test_file["rows"])
-            self.assertEqual(list(export['0'].keys()), test_file["header"])
-            self.assertEqual(list(export['0'].values()), test_file["first_row"])
+            self.assertEqual(len(export["rows"]), test_file["rows"])
+            self.assertEqual(export["header"], test_file["header"])
+            self.assertEqual(list(export["rows"][0].keys()), test_file["header"])
+            self.assertEqual(list(export["rows"][0].values()), test_file["first_row"])
 
     def test_reader_to_json(self) -> None:
         for test_file in self.valid_files:
